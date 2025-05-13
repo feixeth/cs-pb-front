@@ -8,43 +8,38 @@ const router = useRouter()
 const userStore = useUserStore()
 const strategiesStore = useStrategiesStore()
 
-const user = computed(() => userStore.userProfile)
+// ✅ ici on protège l'accès au .value
+const user = computed(() => userStore.userProfile?.value ?? null)
 
-// Fetch user strategies
 onMounted(async () => {
+  await userStore.userInfo()
   if (strategiesStore.allStrategies.length === 0) {
     await strategiesStore.fetchStrategies()
   }
 })
 
 // Get user strategies
-const userStrategies = computed(() => {
-  if (!user.value) return []
-  return strategiesStore.getStrategiesByUserId(user.value.id)
-})
+const userStrategies = computed(() => strategiesStore.strategies)
+const publicCount = computed(() => userStrategies.value.filter(s => s.isPublic).length)
+const privateCount = computed(() => userStrategies.value.filter(s => !s.isPublic).length)
 
-// Count public and private strategies
-const publicCount = computed(() => 
-  userStrategies.value.filter(s => s.isPublic).length
-)
-
-const privateCount = computed(() => 
-  userStrategies.value.filter(s => !s.isPublic).length
-)
-
-// Navigate to create strategy
 const createStrategy = () => {
   router.push({ name: 'create-strategy' })
 }
 </script>
 
+
+
 <template>
   <div class="container mx-auto px-4 py-10">
     <div class="mb-8">
       <h1 class="text-3xl font-heading font-bold mb-2">Dashboard</h1>
-      <p class="text-gray-400">
-        Welcome back, {{ user?.username || 'User' }}! Here's an overview of your CS Playbook activity.
-      </p>
+        <p v-if="user" class="text-gray-400">
+          <span>{{ user.username || 'User unknown' }}</span> Here's an overview of your CS Playbook activity.
+        </p>
+        <p v-else class="text-gray-400">
+          Loading user...
+        </p>
     </div>
     
     <!-- Dashboard Overview -->
@@ -100,7 +95,7 @@ const createStrategy = () => {
         <div class="space-y-3 text-sm">
           <div class="flex justify-between">
             <span class="text-gray-400">Username:</span>
-            <span class="text-white">{{ user?.username }}</span>
+            <span class="text-white">{{ user?.username || 'User' }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-400">Email:</span>
@@ -108,7 +103,9 @@ const createStrategy = () => {
           </div>
           <div class="flex justify-between">
             <span class="text-gray-400">Member since:</span>
-            <span class="text-white">{{ new Date(user?.createdAt).toLocaleDateString() }}</span>
+            <span class="text-white">
+              {{ user?.created_at ? new Date(user?.created_at).toLocaleDateString() : 'Unknown' }}
+            </span>
           </div>
         </div>
         <div class="mt-4">
@@ -125,7 +122,7 @@ const createStrategy = () => {
     <!-- Recent Strategies -->
     <div class="mb-10">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-heading font-semibold">Recent Strategies</h2>
+        <h2 class="text-2xl font-heading font-semibold">Your Recent Strategies</h2>
         <router-link to="/my-strategies" class="text-tacticalGreen-500 hover:text-tacticalGreen-400 text-sm font-medium flex items-center">
           View All
           <svg class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

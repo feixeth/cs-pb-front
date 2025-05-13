@@ -7,8 +7,8 @@ const router = useRouter()
 const userStore = useUserStore()
 const mobileMenuOpen = ref(false)
 
-const isAuthenticated = computed(() => userStore.isAuthenticated)
-const user = computed(() => userStore.userProfile)
+const isAuthenticated =  userStore.isAuthenticated
+const user = userStore.userProfile
 
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
@@ -53,9 +53,12 @@ const logout = () => {
           >
             Strategies
           </router-link>
-          
+
+          <!-- test pour voir si bien auth  -->
+          <!-- <p class="text-xs text-gray-400">isAuthenticated: {{ userStore.isAuthenticated }}</p> -->
+
           <!-- Authenticated Navigation -->
-          <template v-if="isAuthenticated">
+          <template v-if="userStore.isAuthenticated">
             <router-link 
               to="/create-strategy" 
               class="btn-primary text-sm"
@@ -113,8 +116,9 @@ const logout = () => {
             >
               Login
             </router-link>
-            <router-link 
-              to="/register" 
+            <router-link
+              v-if="!userStore.isAuthenticated" 
+              to="/register"
               class="btn-primary text-sm"
             >
               Sign Up

@@ -152,9 +152,9 @@ onMounted(fetchStrategyData)
               </div>
               <h1 class="text-3xl font-heading font-bold text-white mb-2">{{ strategy.title }}</h1>
               <p class="text-gray-400 text-sm">
-                Created on {{ formatDate(strategy.createdAt) }}
-                <span v-if="strategy.createdAt !== strategy.updatedAt">
-                  • Updated on {{ formatDate(strategy.updatedAt) }}
+                Created on {{ formatDate(strategy.created_at) }}
+                <span v-if="strategy.created_at !== strategy.updated_at">
+                  • Updated on {{ formatDate(strategy.updated_at) }}
                 </span>
               </p>
             </div>
@@ -246,7 +246,7 @@ onMounted(fetchStrategyData)
             <h2 class="text-xl font-semibold mb-4">Utility Lineups</h2>
             
             <!-- Lineup Viewer -->
-            <div class="bg-csGray-700 rounded-lg overflow-hidden mb-4">
+            <!-- <div class="bg-csGray-700 rounded-lg overflow-hidden mb-4">
               <div class="aspect-w-16 aspect-h-9 bg-csGray-900">
                 <img 
                   :src="strategy.lineups[activeLineupIndex].image" 
@@ -257,7 +257,7 @@ onMounted(fetchStrategyData)
               <div class="p-4">
                 <h3 class="font-medium text-lg">{{ strategy.lineups[activeLineupIndex].title }}</h3>
               </div>
-            </div>
+            </div> -->
             
             <!-- Lineup Navigation -->
             <div class="flex flex-wrap gap-2">

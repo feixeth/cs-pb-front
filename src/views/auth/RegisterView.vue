@@ -7,7 +7,7 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const registerForm = reactive({
-  username: '',
+  name: '',
   email: '',
   password: '',
   confirmPassword: ''
@@ -35,13 +35,17 @@ const handleRegister = async () => {
   
   try {
     const success = await userStore.register({
-      username: registerForm.username,
+      name: registerForm.username,
       email: registerForm.email,
-      password: registerForm.password
+      password: registerForm.password,
+      password_confirmation:registerForm.confirmPassword
     })
-    
+    if (userStore.isAuthenticated) {
+      error.value = 'You are already logged in.'
+      return
+    }
     if (success) {
-      router.push('/dashboard')
+      router.push('/')
     } else {
       error.value = 'Registration failed. Please try again.'
     }

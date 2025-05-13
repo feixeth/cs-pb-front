@@ -6,11 +6,10 @@ import StrategyCard from '../components/strategy/StrategyCard.vue'
 const strategiesStore = useStrategiesStore()
 
 onMounted(async () => {
-  if (strategiesStore.allStrategies.length === 0) {
-    await strategiesStore.fetchStrategies()
-  }
+  await strategiesStore.fetchStrategies()
 })
 </script>
+
 
 <template>
   <div>
@@ -59,12 +58,12 @@ onMounted(async () => {
               :strategy="strategy"
             />
           </template>
-          
-          <div v-else class="col-span-full text-center py-8">
-            <p class="text-gray-400">No strategies found. Be the first to add one!</p>
-            <router-link to="/create-strategy" class="btn-primary mt-4">
-              Create Strategy
-            </router-link>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StrategyCard
+              v-for="strategy in strategiesStore.strategies"
+              :key="strategy.id"
+              :strategy="strategy"
+            />
           </div>
         </div>
         

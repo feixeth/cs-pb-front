@@ -24,8 +24,7 @@ const handleLogin = async () => {
     
     if (success) {
       // Redirect to the intended page or dashboard
-      const redirectPath = route.query.redirect || '/dashboard'
-      router.push(redirectPath)
+      router.push('/')
     } else {
       error.value = 'Invalid credentials. Please try again.'
     }

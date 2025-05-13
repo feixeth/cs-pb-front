@@ -3,86 +3,82 @@ import { ref, computed } from 'vue'
 import { authApi } from '../services/authApi'
 
 export const useUserStore = defineStore('user', () => {
-  // State
   const user = ref(null)
-  const token = ref(null)
-  
-  // Getters
-  const isAuthenticated = computed(() => !!token.value)
-  const userProfile = computed(() => user.value)
-  
-  // Actions
-  function setUser(userData) {
-    user.value = userData
+  const isAuthenticated = computed(() => !!user.value)
+
+  function setUser(data) {
+    user.value = data
   }
   
-  function setToken(tokenValue) {
-    token.value = tokenValue
+  const userProfile = ref(null)
+  async function checkAuth() {
+    try {
+      const userData = await authApi.getUser()
+      setUser(userData)
+      return true
+    } catch (e) {
+      user.value = null
+      return false
+    }
   }
   
-  function checkAuth() {
-    // In a real app, validate the token with backend
-    // For now, we'll just check if we have a token
-    return !!token.value
-  }
-  
+
   async function login(credentials) {
     try {
-      const response = await authApi.login(credentials)
-      setToken(response.token)
-      setUser(response.user)
+      const userData = await authApi.login(credentials)
+      setUser(userData)
       return true
     } catch (error) {
       console.error('Login error:', error)
       return false
     }
   }
-  
+
   async function register(userData) {
     try {
-      const response = await authApi.register(userData)
-      setToken(response.token)
-      setUser(response.user)
+      const userDataResponse = await authApi.register(userData)
+      setUser(userDataResponse)
       return true
     } catch (error) {
       console.error('Register error:', error)
-      return false
+      throw error.response?.data || { message: 'Registration error' }
     }
   }
-  
-  function logout() {
-    // Clear user data and token
-    user.value = null
-    token.value = null
-  }
-  
-  async function updateProfile(profileData) {
-    try {
-      const updatedUser = await authApi.updateProfile(profileData)
-      setUser(updatedUser)
-      return true
+
+  async function userInfo() {
+    try { 
+      const data = await authApi.getUser(); // /api/user doit renvoyer le UserResource
+      userProfile.value = data
+      return data
     } catch (error) {
-      console.error('Update profile error:', error)
-      return false
+      console.error('User info error:', error)
+      throw error.response?.data || { message: 'Data fetching error' }
     }
   }
-  
+
+
+  async function logout() {
+    try {
+      await authApi.logout()
+    } finally {
+      user.value = null
+    }
+  }
+
   return {
     user,
-    token,
     isAuthenticated,
-    userProfile,
     setUser,
-    setToken,
-    checkAuth,
     login,
     register,
     logout,
-    updateProfile
+    checkAuth,
+    userInfo,
+    userProfile,
   }
 }, {
   persist: {
     storage: localStorage,
-    paths: ['token', 'user']
+    paths: ['user']
   }
 })

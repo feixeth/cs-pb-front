@@ -35,7 +35,7 @@ const logout = () => {
           class="flex items-center space-x-2" 
           @click="closeMobileMenu"
         >
-          <img src="/logo.svg" alt="CS Playbook Logo" class="h-8 w-8" />
+          <img src="/logo.png" alt="CS Playbook Logo" class="h-8 w-8" />
           <span class="font-heading font-bold text-xl text-white hidden sm:inline">CS Playbook</span>
         </router-link>
         

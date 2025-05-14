@@ -2,15 +2,11 @@
 import { onMounted } from 'vue'
 import { useStrategiesStore } from '../stores/strategies'
 import StrategyCard from '../components/strategy/StrategyCard.vue'
-
 const strategiesStore = useStrategiesStore()
-
 onMounted(async () => {
   await strategiesStore.fetchStrategies()
 })
 </script>
-
-
 <template>
   <div>
     <!-- Hero Section -->
@@ -21,6 +17,13 @@ onMounted(async () => {
           <h1 class="text-5xl sm:text-6xl font-heading font-bold mb-6 text-white leading-tight">
             Level Up Your <span class="text-tacticalGreen-500">Counter-Strike</span> Strategy Game
           </h1>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+
+            <!-- <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
+            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
+            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt=""> -->
+            
+          </div>
           <p class="text-xl text-gray-300 mb-8">
             Create, share, and discover winning strategies with the ultimate CS playbook platform.
           </p>

@@ -14,14 +14,14 @@ const user = computed(() => userStore.userProfile?.value ?? null)
 onMounted(async () => {
   await userStore.userInfo()
   if (strategiesStore.allStrategies.length === 0) {
-    await strategiesStore.fetchStrategies()
+    await strategiesStore.getStrategiesByUserId()
   }
 })
 
 // Get user strategies
 const userStrategies = computed(() => strategiesStore.strategies)
-const publicCount = computed(() => userStrategies.value.filter(s => s.isPublic).length)
-const privateCount = computed(() => userStrategies.value.filter(s => !s.isPublic).length)
+const publicCount = computed(() => userStrategies.value.filter(s => s.is_public).length)
+const privateCount = computed(() => userStrategies.value.filter(s => !s.is_public).length)
 
 const createStrategy = () => {
   router.push({ name: 'create-strategy' })
@@ -150,9 +150,9 @@ const createStrategy = () => {
               <div class="flex items-center space-x-2">
                 <span 
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                  :class="strategy.isPublic ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
+                  :class="strategy.is_public ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
                 >
-                  {{ strategy.isPublic ? 'Public' : 'Private' }}
+                  {{ strategy.is_public ? 'Public' : 'Private' }}
                 </span>
                 <div class="flex items-center space-x-1 text-gray-400">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

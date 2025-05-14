@@ -4,6 +4,10 @@ import api from '@/services/api' // axios instance configurée avec baseURL et w
 
 export const useStrategiesStore = defineStore('strategies', () => {
   const strategies = ref([])
+
+  const userStrategies = ref([])
+
+
   const isLoading = ref(false)
   const error = ref(null)
 
@@ -14,7 +18,7 @@ export const useStrategiesStore = defineStore('strategies', () => {
 
 // all public strat 
   const publicStrategies = computed(() => 
-    strategies.value.filter(strategy => !!strategy.isPublic)
+    strategies.value.filter(strategy => !!strategy.is_public)
   )
   
   // top rated strat
@@ -23,8 +27,6 @@ export const useStrategiesStore = defineStore('strategies', () => {
       .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
       .slice(0, 4)
   )
-
-
 
   // single strat by id 
   const getStrategyById = (id) => 
@@ -37,7 +39,6 @@ export const useStrategiesStore = defineStore('strategies', () => {
     error.value = null
     try {
       const response = await api.get('/api/strategies')
-      console.log('Fetched from API:', response.data)
       strategies.value = response.data
       return response;
 
@@ -67,10 +68,10 @@ export const useStrategiesStore = defineStore('strategies', () => {
   async function getStrategiesByUserId() {
     isLoading.value = true
     error.value = null
-
+  
     try {
       const response = await api.get('/api/my-strategies')
-      strategies.value = response.data
+      userStrategies.value = response.data // lieu de strategies.value
     } catch (err) {
       error.value = 'Failed to fetch your strategies'
       console.error(err)
@@ -78,7 +79,7 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
-
+  
 
   async function createStrategy(strategyData) {
     isLoading.value = true
@@ -133,24 +134,31 @@ export const useStrategiesStore = defineStore('strategies', () => {
 
   async function toggleVote(id, voteType) {
     try {
-      const response = await api.post(`/api/strategies/${id}/vote`, { type: voteType })
+      const value = voteType === 'upvote' ? 1 : -1
+  
+      const response = await api.post(`/api/strategies/${id}/vote`, { value })
+      const updated = response.data
+  
       const index = strategies.value.findIndex(s => s.id === id)
       if (index !== -1) {
         strategies.value[index] = {
           ...strategies.value[index],
-          upvotes: response.data.upvotes,
-          downvotes: response.data.downvotes
+          upvotes: updated.score + (updated.user_vote === 1 ? 1 : 0),
+          downvotes: updated.score + (updated.user_vote === -1 ? 1 : 0)
         }
       }
-      return response.data
+  
+      return updated
     } catch (err) {
       console.error('Failed to vote', err)
       return null
     }
   }
+  
 
   return {
     strategies,
+    userStrategies,
     isLoading,
     error,
     allStrategies,

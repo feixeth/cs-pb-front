@@ -47,7 +47,6 @@ const fetchStrategyData = async () => {
   
   try {
     strategy.value = await strategiesStore.fetchStrategyById(strategyId)
-    
     if (!strategy.value) {
       error.value = 'Strategy not found'
     }
@@ -59,26 +58,22 @@ const fetchStrategyData = async () => {
   }
 }
 
-// Handle voting
+// ANtispam 
+const voting = ref(false)
+
+// voting
 const handleVote = async (type) => {
   if (!userStore.isAuthenticated) {
     router.push({ name: 'login', query: { redirect: route.fullPath } })
     return
   }
-  
-  // If already voted with same type, cancel vote
-  if (voteType.value === type) {
-    voteType.value = null
-    hasVoted.value = false
-  } else {
-    // Otherwise set new vote
-    voteType.value = type
-    hasVoted.value = true
+  const res = await strategiesStore.toggleVote(strategyId, type)
+  if (res) {
+    strategy.value.score = res.score
+    voteType.value = res.user_vote
+    hasVoted.value = !!res.user_vote
   }
-  
-  await strategiesStore.toggleVote(strategyId, type)
 }
-
 // Handle lineup navigation
 const showLineup = (index) => {
   activeLineupIndex.value = index
@@ -142,9 +137,9 @@ onMounted(fetchStrategyData)
               <div class="flex items-center mb-3">
                 <span 
                   class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mr-2"
-                  :class="strategy.isPublic ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
+                  :class="strategy.is_public ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
                 >
-                  {{ strategy.isPublic ? 'Public' : 'Private' }}
+                  {{ strategy.is_public ? 'Public' : 'Private' }}
                 </span>
                 <span class="text-gray-400 capitalize">{{ strategy.map }}</span>
                 <span class="mx-2 text-gray-600">•</span>

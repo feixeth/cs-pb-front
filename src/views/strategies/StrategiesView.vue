@@ -10,7 +10,7 @@ const filterType = ref('')
 const sortBy = ref('newest')
 
 // Map and type
-const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'overpass', 'vertigo', 'ancient']
+const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'train', 'anubis', 'ancient']
 const types = ['T Side', 'CT Side', 'Pistol Round', 'Eco', 'Force Buy']
 
 // Fetch strat
@@ -20,7 +20,8 @@ onMounted(async () => {
 
 // Filter strat
 const filteredStrategies = computed(() => {
-  // Start with public strategies only
+
+
   let result = strategiesStore.publicStrategies
   
   // search

@@ -5,7 +5,7 @@
         <!-- Logo and Description -->
         <div class="col-span-1 md:col-span-2">
           <div class="flex items-center space-x-2 mb-4">
-            <img src="/logo.svg" alt="CS Playbook Logo" class="h-8 w-8" />
+            <img src="/logo.png" alt="CS Playbook Logo" class="h-8 w-8" />
             <span class="font-heading font-bold text-xl text-white">CS Playbook</span>
           </div>
           <p class="text-gray-400 mb-4">

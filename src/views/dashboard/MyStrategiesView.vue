@@ -31,6 +31,7 @@ const userStore = useUserStore()
 
 onMounted(async () => {
   await strategiesStore.getStrategiesByUserId()
+  console.log('Strategies loaded:', strategiesStore.strategies)
 })
 
 
@@ -41,5 +42,5 @@ onMounted(async () => {
 // })
 
 // On lit depuis le store directement
-const userStrategies = computed(() => strategiesStore.strategies)
+const userStrategies = computed(() => strategiesStore.userStrategies)
 </script>

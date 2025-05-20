@@ -114,7 +114,6 @@ onMounted(async () => {
               Assign specific roles and tasks to each player in your squad for clear communication and execution.
             </p>
           </div>
-          
           <!-- Feature 3 -->
           <div class="bg-csGray-800 p-6 rounded-lg">
             <div class="w-12 h-12 bg-secondary-800 rounded-lg flex items-center justify-center mb-4">

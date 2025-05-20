@@ -10,7 +10,7 @@ const userStore = useUserStore()
 
 // Check authentication status on app load
 onMounted(() => {
-  userStore.checkAuth()
+  userStore.loadUser()
 })
 
 // Update page title based on route

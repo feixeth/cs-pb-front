@@ -1,38 +1,27 @@
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import api from '@/services/api' // axios instance configurée avec baseURL et withCredentials
+import api from '@/services/api'
 
 export const useStrategiesStore = defineStore('strategies', () => {
   const strategies = ref([])
-
   const userStrategies = ref([])
-
-
   const isLoading = ref(false)
   const error = ref(null)
 
-
-  // all strat 
   const allStrategies = computed(() => strategies.value)
-
-
-// all public strat 
   const publicStrategies = computed(() => 
     strategies.value.filter(strategy => !!strategy.is_public)
   )
   
-  // top rated strat
   const topStrategies = computed(() => 
     [...publicStrategies.value]
       .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
       .slice(0, 4)
   )
 
-  // single strat by id 
   const getStrategyById = (id) => 
     strategies.value.find(strategy => strategy.id === id)
-
-
 
   async function fetchStrategies() {
     isLoading.value = true
@@ -41,7 +30,6 @@ export const useStrategiesStore = defineStore('strategies', () => {
       const response = await api.get('/api/strategies')
       strategies.value = response.data
       return response;
-
     } catch (err) {
       error.value = 'Failed to fetch strategies'
       console.error(err)
@@ -71,7 +59,14 @@ export const useStrategiesStore = defineStore('strategies', () => {
   
     try {
       const response = await api.get('/api/my-strategies')
-      userStrategies.value = response.data // lieu de strategies.value
+      // ⚠️ CORRECTION: S'assurer que les données sont correctement stockées
+      if (response && response.data) {
+        userStrategies.value = response.data
+        // ⚠️ CORRECTION: Mettre à jour également strategies pour le dashboard
+        strategies.value = response.data
+      } else {
+        console.error('API response missing data structure', response)
+      }
     } catch (err) {
       error.value = 'Failed to fetch your strategies'
       console.error(err)

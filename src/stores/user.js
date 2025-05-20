@@ -5,24 +5,29 @@ import { authApi } from '../services/authApi'
 export const useUserStore = defineStore('user', () => {
   const user = ref(null)
   const isAuthenticated = computed(() => !!user.value)
+  // ⚠️ CORRECTION: Initialiser avec un objet vide, pas un ref
+  const userProfile = ref({})
 
   function setUser(data) {
     user.value = data
   }
-  
-  const userProfile = ref(null)
-  async function checkAuth() {
+  const isReady = ref(false) // Ajoute en haut
+
+  async function loadUser() {
     try {
-      const userData = await authApi.getUser()
-      setUser(userData)
-      return true
-    } catch (e) {
+      const response = await authApi.getUser()
+      setUser(response)
+      userProfile.value = response?.data ?? response
+      isReady.value = true
+      return userProfile.value
+    } catch (error) {
       user.value = null
-      return false
+      userProfile.value = {}
+      isReady.value = true
+      return null
     }
   }
   
-
   async function login(credentials) {
     try {
       const userData = await authApi.login(credentials)
@@ -44,19 +49,6 @@ export const useUserStore = defineStore('user', () => {
       throw error.response?.data || { message: 'Registration error' }
     }
   }
-
-  async function userInfo() {
-    try { 
-      const data = await authApi.getUser(); // /api/user doit renvoyer le UserResource
-      userProfile.value = data
-      return data
-    } catch (error) {
-      console.error('User info error:', error)
-      throw error.response?.data || { message: 'Data fetching error' }
-    }
-  }
-
-
   async function logout() {
     try {
       await authApi.logout()
@@ -72,9 +64,9 @@ export const useUserStore = defineStore('user', () => {
     login,
     register,
     logout,
-    checkAuth,
-    userInfo,
+    loadUser,
     userProfile,
+    isReady,
   }
 }, {
   persist: {

@@ -3,12 +3,14 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 
+
 const router = useRouter()
 const userStore = useUserStore()
 const mobileMenuOpen = ref(false)
 
-const isAuthenticated =  userStore.isAuthenticated
-const user = userStore.userProfile
+const isAuthenticated = computed(() => userStore.isAuthenticated)
+const user = computed(() => userStore.userProfile)
+
 
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value

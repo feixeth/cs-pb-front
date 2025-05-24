@@ -30,8 +30,8 @@ export const useUserStore = defineStore('user', () => {
   
   async function login(credentials) {
     try {
-      const userData = await authApi.login(credentials)
-      setUser(userData)
+      await authApi.login(credentials)
+      await loadUser() // récupère et met à jour user + userProfile
       return true
     } catch (error) {
       console.error('Login error:', error)

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full text-center">
-      <img src="/logo.svg" alt="CS Playbook Logo" class="mx-auto h-24 w-auto mb-6" />
+      <img src="/logo.png" alt="CS Playbook Logo" class="mx-auto h-24 w-auto mb-6" />
       
       <h1 class="text-6xl font-heading font-bold text-white mb-4">404</h1>
       <h2 class="text-2xl font-medium text-tacticalGreen-500 mb-6">Page Not Found</h2>

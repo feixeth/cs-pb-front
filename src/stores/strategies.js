@@ -1,40 +1,35 @@
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { fakeStrategiesApi } from '../services/fakeApi'
+import api from '@/services/api'
 
 export const useStrategiesStore = defineStore('strategies', () => {
-  // State
   const strategies = ref([])
+  const userStrategies = ref([])
   const isLoading = ref(false)
   const error = ref(null)
-  
-  // Getters
+
   const allStrategies = computed(() => strategies.value)
   const publicStrategies = computed(() => 
-    strategies.value.filter(strategy => strategy.isPublic)
+    strategies.value.filter(strategy => !!strategy.is_public)
   )
+  
   const topStrategies = computed(() => 
     [...publicStrategies.value]
       .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
       .slice(0, 4)
   )
-  
-  // Get strategies by user ID
-  const getStrategiesByUserId = (userId) => 
-    strategies.value.filter(strategy => strategy.userId === userId)
-  
-  // Get strategy by ID
+
   const getStrategyById = (id) => 
     strategies.value.find(strategy => strategy.id === id)
-  
-  // Actions
+
   async function fetchStrategies() {
     isLoading.value = true
     error.value = null
-    
     try {
-      const data = await fakeStrategiesApi.getStrategies()
-      strategies.value = data
+      const response = await api.get('/api/strategies')
+      strategies.value = response.data
+      return response;
     } catch (err) {
       error.value = 'Failed to fetch strategies'
       console.error(err)
@@ -42,26 +37,13 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
-  
+
   async function fetchStrategyById(id) {
     isLoading.value = true
     error.value = null
-    
     try {
-      // Try to get it from store first
-      let strategy = getStrategyById(id)
-      
-      if (!strategy) {
-        // If not in store, fetch it
-        strategy = await fakeStrategiesApi.getStrategyById(id)
-        
-        // Add to store if not already there
-        if (!strategies.value.some(s => s.id === strategy.id)) {
-          strategies.value.push(strategy)
-        }
-      }
-      
-      return strategy
+      const response = await api.get(`/api/strategies/${id}`)
+      return response.data
     } catch (err) {
       error.value = 'Failed to fetch strategy'
       console.error(err)
@@ -70,15 +52,37 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
+
+  async function getStrategiesByUserId() {
+    isLoading.value = true
+    error.value = null
   
+    try {
+      const response = await api.get('/api/my-strategies')
+      // ⚠️ CORRECTION: S'assurer que les données sont correctement stockées
+      if (response && response.data) {
+        userStrategies.value = response.data
+        // ⚠️ CORRECTION: Mettre à jour également strategies pour le dashboard
+        strategies.value = response.data
+      } else {
+        console.error('API response missing data structure', response)
+      }
+    } catch (err) {
+      error.value = 'Failed to fetch your strategies'
+      console.error(err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+  
+
   async function createStrategy(strategyData) {
     isLoading.value = true
     error.value = null
-    
     try {
-      const newStrategy = await fakeStrategiesApi.createStrategy(strategyData)
-      strategies.value.push(newStrategy)
-      return newStrategy
+      const response = await api.post('/api/strategies', strategyData)
+      strategies.value.push(response.data)
+      return response.data
     } catch (err) {
       error.value = 'Failed to create strategy'
       console.error(err)
@@ -87,21 +91,17 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
-  
+
   async function updateStrategy(id, strategyData) {
     isLoading.value = true
     error.value = null
-    
     try {
-      const updatedStrategy = await fakeStrategiesApi.updateStrategy(id, strategyData)
-      
-      // Update in the store
+      const response = await api.put(`/api/strategies/${id}`, strategyData)
       const index = strategies.value.findIndex(s => s.id === id)
       if (index !== -1) {
-        strategies.value[index] = updatedStrategy
+        strategies.value[index] = response.data
       }
-      
-      return updatedStrategy
+      return response.data
     } catch (err) {
       error.value = 'Failed to update strategy'
       console.error(err)
@@ -110,15 +110,12 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
-  
+
   async function deleteStrategy(id) {
     isLoading.value = true
     error.value = null
-    
     try {
-      await fakeStrategiesApi.deleteStrategy(id)
-      
-      // Remove from store
+      await api.delete(`/api/strategies/${id}`)
       strategies.value = strategies.value.filter(s => s.id !== id)
       return true
     } catch (err) {
@@ -129,30 +126,34 @@ export const useStrategiesStore = defineStore('strategies', () => {
       isLoading.value = false
     }
   }
-  
+
   async function toggleVote(id, voteType) {
     try {
-      const result = await fakeStrategiesApi.voteStrategy(id, voteType)
-      
-      // Update strategy in store
+      const value = voteType === 'upvote' ? 1 : -1
+  
+      const response = await api.post(`/api/strategies/${id}/vote`, { value })
+      const updated = response.data
+  
       const index = strategies.value.findIndex(s => s.id === id)
       if (index !== -1) {
         strategies.value[index] = {
           ...strategies.value[index],
-          upvotes: result.upvotes,
-          downvotes: result.downvotes
+          upvotes: updated.score + (updated.user_vote === 1 ? 1 : 0),
+          downvotes: updated.score + (updated.user_vote === -1 ? 1 : 0)
         }
       }
-      
-      return result
+  
+      return updated
     } catch (err) {
       console.error('Failed to vote', err)
       return null
     }
   }
   
+
   return {
     strategies,
+    userStrategies,
     isLoading,
     error,
     allStrategies,

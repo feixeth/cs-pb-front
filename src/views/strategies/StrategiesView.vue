@@ -9,21 +9,22 @@ const filterMap = ref('')
 const filterType = ref('')
 const sortBy = ref('newest')
 
-// Maps and types for filters
-const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'overpass', 'vertigo', 'ancient']
+// Map and type
+const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'train', 'anubis', 'ancient']
 const types = ['T Side', 'CT Side', 'Pistol Round', 'Eco', 'Force Buy']
 
-// Fetch strategies on component mount
+// Fetch strat
 onMounted(async () => {
   await strategiesStore.fetchStrategies()
 })
 
-// Filter and sort strategies
+// Filter strat
 const filteredStrategies = computed(() => {
-  // Start with public strategies only
+
+
   let result = strategiesStore.publicStrategies
   
-  // Filter by search query
+  // search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(strategy => 
@@ -32,21 +33,21 @@ const filteredStrategies = computed(() => {
     )
   }
   
-  // Filter by map
+  //  map
   if (filterMap.value) {
     result = result.filter(strategy => strategy.map === filterMap.value)
   }
   
-  // Filter by type
+  // type
   if (filterType.value) {
     result = result.filter(strategy => strategy.type === filterType.value)
   }
   
-  // Sort strategies
+  // some sort strat
   if (sortBy.value === 'newest') {
-    result = [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    result = [...result].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   } else if (sortBy.value === 'oldest') {
-    result = [...result].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    result = [...result].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
   } else if (sortBy.value === 'most-votes') {
     result = [...result].sort((a, b) => 
       (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes)
@@ -173,7 +174,7 @@ const resetFilters = () => {
     <template v-else>
       <div v-if="filteredStrategies.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <StrategyCard 
-          v-for="strategy in filteredStrategies" 
+          v-for="strategy in filteredStrategies"
           :key="strategy.id"
           :strategy="strategy"
         />

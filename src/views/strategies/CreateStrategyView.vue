@@ -11,7 +11,7 @@ const userStore = useUserStore()
 const isLoading = ref(false)
 const error = ref('')
 
-const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'overpass', 'vertigo', 'ancient']
+const maps = ['dust2', 'mirage', 'inferno', 'nuke', 'train', 'anubis', 'ancient']
 const types = ['T Side', 'CT Side', 'Pistol Round', 'Eco', 'Force Buy']
 
 const strategyForm = reactive({
@@ -19,7 +19,7 @@ const strategyForm = reactive({
   description: '',
   map: '',
   type: '',
-  isPublic: true,
+  is_public: true,
   players: Array.from({ length: 5 }, (_, i) => ({
     position: i + 1,
     role: '',
@@ -48,8 +48,8 @@ const handleSubmit = async () => {
     const newStrategy = await strategiesStore.createStrategy({
       ...strategyForm,
       userId: userStore.user.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })
     
     if (newStrategy) {
@@ -151,12 +151,12 @@ const handleSubmit = async () => {
             <!-- Visibility -->
             <div class="flex items-center">
               <input
-                id="isPublic"
-                v-model="strategyForm.isPublic"
+                id="is_public"
+                v-model="strategyForm.is_public"
                 type="checkbox"
                 class="h-4 w-4 rounded border-gray-600 bg-csGray-700 text-tacticalGreen-500 focus:ring-tacticalGreen-500 focus:ring-offset-csGray-800"
               />
-              <label for="isPublic" class="ml-2 block text-sm text-gray-300">
+              <label for="is_public" class="ml-2 block text-sm text-gray-300">
                 Make this strategy public
               </label>
             </div>

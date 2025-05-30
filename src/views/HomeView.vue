@@ -2,16 +2,11 @@
 import { onMounted } from 'vue'
 import { useStrategiesStore } from '../stores/strategies'
 import StrategyCard from '../components/strategy/StrategyCard.vue'
-
 const strategiesStore = useStrategiesStore()
-
 onMounted(async () => {
-  if (strategiesStore.allStrategies.length === 0) {
-    await strategiesStore.fetchStrategies()
-  }
+  await strategiesStore.fetchStrategies()
 })
 </script>
-
 <template>
   <div>
     <!-- Hero Section -->
@@ -22,6 +17,13 @@ onMounted(async () => {
           <h1 class="text-5xl sm:text-6xl font-heading font-bold mb-6 text-white leading-tight">
             Level Up Your <span class="text-tacticalGreen-500">Counter-Strike</span> Strategy Game
           </h1>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+
+            <!-- <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
+            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
+            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt=""> -->
+            
+          </div>
           <p class="text-xl text-gray-300 mb-8">
             Create, share, and discover winning strategies with the ultimate CS playbook platform.
           </p>
@@ -59,12 +61,12 @@ onMounted(async () => {
               :strategy="strategy"
             />
           </template>
-          
-          <div v-else class="col-span-full text-center py-8">
-            <p class="text-gray-400">No strategies found. Be the first to add one!</p>
-            <router-link to="/create-strategy" class="btn-primary mt-4">
-              Create Strategy
-            </router-link>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StrategyCard
+              v-for="strategy in strategiesStore.strategies"
+              :key="strategy.id"
+              :strategy="strategy"
+            />
           </div>
         </div>
         
@@ -112,7 +114,6 @@ onMounted(async () => {
               Assign specific roles and tasks to each player in your squad for clear communication and execution.
             </p>
           </div>
-          
           <!-- Feature 3 -->
           <div class="bg-csGray-800 p-6 rounded-lg">
             <div class="w-12 h-12 bg-secondary-800 rounded-lg flex items-center justify-center mb-4">

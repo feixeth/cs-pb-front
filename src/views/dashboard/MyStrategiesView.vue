@@ -21,17 +21,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useStrategiesStore } from '../../stores/strategies'
 import { useUserStore } from '../../stores/user'
 import StrategyCard from '../../components/strategy/StrategyCard.vue'
 
 const strategiesStore = useStrategiesStore()
 const userStore = useUserStore()
-const userStrategies = ref([])
 
 onMounted(async () => {
-  // Assuming the store has a method to fetch user's strategies
-  userStrategies.value = await strategiesStore.getUserStrategies(userStore.user.id)
+  await strategiesStore.getStrategiesByUserId()
+  console.log('Strategies loaded:', strategiesStore.strategies)
 })
+
+
+
+// onMounted(async () => { :: Ancien code qui faisait l'erreur , on essayait de passer l'id alors que la fonction n'en attend pas 
+//   // call to fetch the user strat
+//   userStrategies.value = await strategies.getStrategiesByUserId(userStore.user.id)
+// })
+
+// On lit depuis le store directement
+const userStrategies = computed(() => strategiesStore.userStrategies)
 </script>

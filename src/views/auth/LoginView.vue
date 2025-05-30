@@ -24,8 +24,7 @@ const handleLogin = async () => {
     
     if (success) {
       // Redirect to the intended page or dashboard
-      const redirectPath = route.query.redirect || '/dashboard'
-      router.push(redirectPath)
+      router.push('/')
     } else {
       error.value = 'Invalid credentials. Please try again.'
     }
@@ -47,7 +46,7 @@ const handleDemoLogin = async () => {
   <div class="flex min-h-[80vh] items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
-        <img class="mx-auto h-14 w-auto" src="/logo.svg" alt="CS Playbook Logo" />
+        <img class="mx-auto h-14 w-auto" src="/logo.png" alt="CS Playbook Logo" />
         <h2 class="mt-6 text-3xl font-heading font-bold">Sign in to your account</h2>
         <p class="mt-2 text-sm text-gray-400">
           Or

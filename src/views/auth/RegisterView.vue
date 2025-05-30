@@ -7,7 +7,7 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const registerForm = reactive({
-  username: '',
+  name: '',
   email: '',
   password: '',
   confirmPassword: ''
@@ -35,13 +35,17 @@ const handleRegister = async () => {
   
   try {
     const success = await userStore.register({
-      username: registerForm.username,
+      name: registerForm.username,
       email: registerForm.email,
-      password: registerForm.password
+      password: registerForm.password,
+      password_confirmation:registerForm.confirmPassword
     })
-    
+    if (userStore.isAuthenticated) {
+      error.value = 'You are already logged in.'
+      return
+    }
     if (success) {
-      router.push('/dashboard')
+      router.push('/')
     } else {
       error.value = 'Registration failed. Please try again.'
     }
@@ -57,7 +61,7 @@ const handleRegister = async () => {
   <div class="flex min-h-[80vh] items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
-        <img class="mx-auto h-14 w-auto" src="/logo.svg" alt="CS Playbook Logo" />
+        <img class="mx-auto h-14 w-auto" src="/logo.png" alt="CS Playbook Logo" />
         <h2 class="mt-6 text-3xl font-heading font-bold">Create your account</h2>
         <p class="mt-2 text-sm text-gray-400">
           Or

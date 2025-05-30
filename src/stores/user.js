@@ -3,86 +3,74 @@ import { ref, computed } from 'vue'
 import { authApi } from '../services/authApi'
 
 export const useUserStore = defineStore('user', () => {
-  // State
   const user = ref(null)
-  const token = ref(null)
-  
-  // Getters
-  const isAuthenticated = computed(() => !!token.value)
-  const userProfile = computed(() => user.value)
-  
-  // Actions
-  function setUser(userData) {
-    user.value = userData
+  const isAuthenticated = computed(() => !!user.value)
+  // ⚠️ CORRECTION: Initialiser avec un objet vide, pas un ref
+  const userProfile = ref({})
+
+  function setUser(data) {
+    user.value = data
   }
-  
-  function setToken(tokenValue) {
-    token.value = tokenValue
-  }
-  
-  function checkAuth() {
-    // In a real app, validate the token with backend
-    // For now, we'll just check if we have a token
-    return !!token.value
+  const isReady = ref(false) // Ajoute en haut
+
+  async function loadUser() {
+    try {
+      const response = await authApi.getUser()
+      setUser(response)
+      userProfile.value = response?.data ?? response
+      isReady.value = true
+      return userProfile.value
+    } catch (error) {
+      user.value = null
+      userProfile.value = {}
+      isReady.value = true
+      return null
+    }
   }
   
   async function login(credentials) {
     try {
-      const response = await authApi.login(credentials)
-      setToken(response.token)
-      setUser(response.user)
+      await authApi.login(credentials)
+      await loadUser() // récupère et met à jour user + userProfile
       return true
     } catch (error) {
       console.error('Login error:', error)
       return false
     }
   }
-  
+
   async function register(userData) {
     try {
-      const response = await authApi.register(userData)
-      setToken(response.token)
-      setUser(response.user)
+      const userDataResponse = await authApi.register(userData)
+      setUser(userDataResponse)
       return true
     } catch (error) {
       console.error('Register error:', error)
-      return false
+      throw error.response?.data || { message: 'Registration error' }
     }
   }
-  
-  function logout() {
-    // Clear user data and token
-    user.value = null
-    token.value = null
-  }
-  
-  async function updateProfile(profileData) {
+  async function logout() {
     try {
-      const updatedUser = await authApi.updateProfile(profileData)
-      setUser(updatedUser)
-      return true
-    } catch (error) {
-      console.error('Update profile error:', error)
-      return false
+      await authApi.logout()
+    } finally {
+      user.value = null
     }
   }
-  
+
   return {
     user,
-    token,
     isAuthenticated,
-    userProfile,
     setUser,
-    setToken,
-    checkAuth,
     login,
     register,
     logout,
-    updateProfile
+    loadUser,
+    userProfile,
+    isReady,
   }
 }, {
   persist: {
     storage: localStorage,
-    paths: ['token', 'user']
+    paths: ['user']
   }
 })

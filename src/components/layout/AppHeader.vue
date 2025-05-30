@@ -3,12 +3,14 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 
+
 const router = useRouter()
 const userStore = useUserStore()
 const mobileMenuOpen = ref(false)
 
 const isAuthenticated = computed(() => userStore.isAuthenticated)
 const user = computed(() => userStore.userProfile)
+
 
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
@@ -35,7 +37,7 @@ const logout = () => {
           class="flex items-center space-x-2" 
           @click="closeMobileMenu"
         >
-          <img src="/logo.svg" alt="CS Playbook Logo" class="h-8 w-8" />
+          <img src="/logo.png" alt="CS Playbook Logo" class="h-8 w-8" />
           <span class="font-heading font-bold text-xl text-white hidden sm:inline">CS Playbook</span>
         </router-link>
         
@@ -53,9 +55,12 @@ const logout = () => {
           >
             Strategies
           </router-link>
-          
+
+          <!-- test pour voir si bien auth  -->
+          <!-- <p class="text-xs text-gray-400">isAuthenticated: {{ userStore.isAuthenticated }}</p> -->
+
           <!-- Authenticated Navigation -->
-          <template v-if="isAuthenticated">
+          <template v-if="userStore.isAuthenticated">
             <router-link 
               to="/create-strategy" 
               class="btn-primary text-sm"
@@ -113,8 +118,9 @@ const logout = () => {
             >
               Login
             </router-link>
-            <router-link 
-              to="/register" 
+            <router-link
+              v-if="!userStore.isAuthenticated" 
+              to="/register"
               class="btn-primary text-sm"
             >
               Sign Up

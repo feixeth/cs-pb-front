@@ -7,7 +7,7 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const registerForm = reactive({
-  name: '',
+  username: '',
   email: '',
   password: '',
   confirmPassword: ''

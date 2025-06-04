@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
-})
+});
 
 // Interceptor pour ajouter le token CSRF dans tous les appels
 api.interceptors.request.use(config => {

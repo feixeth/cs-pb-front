@@ -40,13 +40,14 @@ const handleRegister = async () => {
       password: registerForm.password,
       password_confirmation:registerForm.confirmPassword
     })
-    if (userStore.isAuthenticated) {
-      error.value = 'You are already logged in.'
-      return
-    }
-    if (success) {
-      router.push('/')
-    } else {
+    // forcement un bug car auth tjr vrai apre le register
+    // if (userStore.isAuthenticated) {
+    //   error.value = 'You are already logged in.'
+    //   return
+    // }
+  if (success) {
+      router.push({ path: '/', query: { registered: 'true' } })
+  } else {
       error.value = 'Registration failed. Please try again.'
     }
   } catch (err) {

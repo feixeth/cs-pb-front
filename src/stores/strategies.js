@@ -130,17 +130,14 @@ export const useStrategiesStore = defineStore('strategies', () => {
   async function toggleVote(id, voteType) {
     try {
       const value = voteType === 'upvote' ? 1 : -1
-  
       const response = await api.post(`/api/strategies/${id}/vote`, { value })
       const updated = response.data
   
       const index = strategies.value.findIndex(s => s.id === id)
       if (index !== -1) {
-        strategies.value[index] = {
-          ...strategies.value[index],
-          upvotes: updated.score + (updated.user_vote === 1 ? 1 : 0),
-          downvotes: updated.score + (updated.user_vote === -1 ? 1 : 0)
-        }
+        strategies.value[index].upvotes = updated.upvotes
+        strategies.value[index].downvotes = updated.downvotes
+        strategies.value[index].score = updated.score
       }
   
       return updated
@@ -149,6 +146,7 @@ export const useStrategiesStore = defineStore('strategies', () => {
       return null
     }
   }
+  
   
 
   return {

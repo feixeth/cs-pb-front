@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStrategiesStore } from '../../stores/strategies'
 import { useUserStore } from '../../stores/user'
+import ShareButton from '../../components/layout/ShareButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,36 +16,27 @@ const isLoading = ref(true)
 const error = ref(null)
 const activeLineupIndex = ref(0)
 
-// Vote status
-const hasVoted = ref(false)
-const voteType = ref(null)
-
-// Get the current user
 const currentUser = computed(() => userStore.user)
 
-// Check if current user is the author
 const isAuthor = computed(() => {
   if (!userStore.isAuthenticated || !strategy.value) return false
   return userStore.user?.id === strategy.value.userId
 })
 
-// Calculate votes score
 const voteScore = computed(() => {
   if (!strategy.value) return 0
-  return strategy.value.upvotes - strategy.value.downvotes
+  return (strategy.value.upvotes ?? 0) - (strategy.value.downvotes ?? 0)
 })
 
-// Format date
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' }
   return new Date(dateString).toLocaleDateString(undefined, options)
 }
 
-// Fetch strategy data
 const fetchStrategyData = async () => {
   isLoading.value = true
   error.value = null
-  
+
   try {
     strategy.value = await strategiesStore.fetchStrategyById(strategyId)
     if (!strategy.value) {
@@ -58,33 +50,28 @@ const fetchStrategyData = async () => {
   }
 }
 
-// ANtispam 
-const voting = ref(false)
-
-// voting
 const handleVote = async (type) => {
   if (!userStore.isAuthenticated) {
     router.push({ name: 'login', query: { redirect: route.fullPath } })
     return
   }
+
   const res = await strategiesStore.toggleVote(strategyId, type)
   if (res) {
-    strategy.value.score = res.score
-    voteType.value = res.user_vote
-    hasVoted.value = !!res.user_vote
+    strategy.value.upvotes = res.upvotes
+    strategy.value.downvotes = res.downvotes
+    strategy.value.user_vote = res.user_vote
   }
 }
-// Handle lineup navigation
+
 const showLineup = (index) => {
   activeLineupIndex.value = index
 }
 
-// Handle edit strategy
 const editStrategy = () => {
   router.push({ name: 'edit-strategy', params: { id: strategyId } })
 }
 
-// Handle delete strategy
 const deleteStrategy = async () => {
   if (confirm('Are you sure you want to delete this strategy? This action cannot be undone.')) {
     const success = await strategiesStore.deleteStrategy(strategyId)
@@ -94,18 +81,15 @@ const deleteStrategy = async () => {
   }
 }
 
-// Fetch strategy on component mount
 onMounted(fetchStrategyData)
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-10">
-    <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-tacticalGreen-500"></div>
     </div>
-    
-    <!-- Error State -->
+
     <div v-else-if="error" class="text-center py-12 bg-csGray-800 rounded-lg">
       <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -115,10 +99,8 @@ onMounted(fetchStrategyData)
         Back to Strategies
       </router-link>
     </div>
-    
-    <!-- Strategy Content -->
+
     <template v-else-if="strategy">
-      <!-- Back Navigation -->
       <div class="mb-6">
         <router-link to="/strategies" class="flex items-center text-tacticalGreen-500 hover:text-tacticalGreen-400 transition-colors">
           <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,12 +109,10 @@ onMounted(fetchStrategyData)
           Back to all strategies
         </router-link>
       </div>
-      
-      <!-- Strategy Header -->
+
       <div class="bg-csGray-800 rounded-lg overflow-hidden mb-8">
         <div class="p-6">
           <div class="flex flex-wrap items-start justify-between mb-4">
-            <!-- Title and Meta -->
             <div class="mb-4 md:mb-0">
               <div class="flex items-center mb-3">
                 <span 
@@ -153,20 +133,17 @@ onMounted(fetchStrategyData)
                 </span>
               </p>
             </div>
-            
-            <!-- Votes and Actions -->
+
             <div class="flex items-center space-x-4">
-              <!-- Vote Buttons -->
               <div class="flex items-center space-x-2 bg-csGray-700 rounded-lg p-1">
                 <button 
                   @click="handleVote('upvote')" 
                   class="p-2 rounded-md transition-colors"
-                  :class="voteType === 'upvote' ? 'bg-tacticalGreen-500 text-white' : 'text-gray-400 hover:text-white hover:bg-csGray-600'"
-                  aria-label="Upvote"
+                  :class="strategy.user_vote === 1 ? 'text-green-600 bg-green-100' : 'text-green-400 hover:bg-green-900'"
+                  :title="`${strategy.upvotes ?? 0} upvotes`"
+                  aria-label="Vote positif"
                 >
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                  </svg>
+                  👍
                 </button>
                 <span 
                   class="text-base font-medium min-w-[2rem] text-center"
@@ -177,46 +154,39 @@ onMounted(fetchStrategyData)
                 <button 
                   @click="handleVote('downvote')" 
                   class="p-2 rounded-md transition-colors"
-                  :class="voteType === 'downvote' ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-white hover:bg-csGray-600'"
-                  aria-label="Downvote"
+                  :class="strategy.user_vote === -1 ? 'text-red-600 bg-red-100' : 'text-red-400 hover:bg-red-900'"
+                  :title="`${strategy.downvotes ?? 0} downvotes`"
+                  aria-label="Vote négatif"
                 >
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  👎
                 </button>
               </div>
-              
-              <!-- Author Actions -->
+
               <div v-if="isAuthor" class="flex items-center space-x-2">
                 <button 
                   @click="editStrategy"
                   class="p-2 rounded-md text-gray-400 hover:text-white hover:bg-csGray-700 transition-colors"
                   aria-label="Edit Strategy"
                 >
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
+                  ✏️
                 </button>
                 <button 
                   @click="deleteStrategy"
                   class="p-2 rounded-md text-gray-400 hover:text-red-500 hover:bg-csGray-700 transition-colors"
                   aria-label="Delete Strategy"
                 >
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  🗑️
                 </button>
               </div>
             </div>
           </div>
-          
-          <!-- Strategy Description -->
+
           <div class="bg-csGray-700 p-4 rounded-lg mb-6">
             <h2 class="text-xl font-semibold mb-2">Description</h2>
             <p class="text-gray-300 whitespace-pre-line">{{ strategy.description }}</p>
           </div>
-          
-          <!-- Player Roles Section -->
+          <ShareButton />
+
           <div class="mb-6">
             <h2 class="text-xl font-semibold mb-4">Player Roles</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -235,26 +205,9 @@ onMounted(fetchStrategyData)
               </div>
             </div>
           </div>
-          
-          <!-- Lineups Section -->
+
           <div v-if="strategy.lineups && strategy.lineups.length > 0">
             <h2 class="text-xl font-semibold mb-4">Utility Lineups</h2>
-            
-            <!-- Lineup Viewer -->
-            <!-- <div class="bg-csGray-700 rounded-lg overflow-hidden mb-4">
-              <div class="aspect-w-16 aspect-h-9 bg-csGray-900">
-                <img 
-                  :src="strategy.lineups[activeLineupIndex].image" 
-                  :alt="strategy.lineups[activeLineupIndex].title"
-                  class="object-contain w-full h-full"
-                />
-              </div>
-              <div class="p-4">
-                <h3 class="font-medium text-lg">{{ strategy.lineups[activeLineupIndex].title }}</h3>
-              </div>
-            </div> -->
-            
-            <!-- Lineup Navigation -->
             <div class="flex flex-wrap gap-2">
               <button 
                 v-for="(lineup, index) in strategy.lineups" 
@@ -276,9 +229,8 @@ onMounted(fetchStrategyData)
 <style scoped>
 .aspect-w-16 {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%;
 }
-
 .aspect-h-9 {
   position: absolute;
   height: 100%;

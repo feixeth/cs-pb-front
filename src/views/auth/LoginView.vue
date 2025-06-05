@@ -34,12 +34,6 @@ const handleLogin = async () => {
     isLoading.value = false
   }
 }
-
-const handleDemoLogin = async () => {
-  loginForm.email = 'demo@example.com'
-  loginForm.password = 'password'
-  await handleLogin()
-}
 </script>
 
 <template>
@@ -125,18 +119,6 @@ const handleDemoLogin = async () => {
                 Signing in...
               </span>
               <span v-else>Sign in</span>
-            </button>
-          </div>
-          
-          <!-- Demo Account Button -->
-          <div>
-            <button
-              type="button"
-              @click="handleDemoLogin"
-              class="w-full btn bg-csGray-600 hover:bg-csGray-500 text-white py-2.5 text-center"
-              :disabled="isLoading"
-            >
-              Use Demo Account
             </button>
           </div>
         </form>

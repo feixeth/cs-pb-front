@@ -5,6 +5,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+
 // Interceptor pour ajouter le token CSRF dans tous les appels
 api.interceptors.request.use(config => {
   const token = getCookie('XSRF-TOKEN')

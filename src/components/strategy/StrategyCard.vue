@@ -1,7 +1,10 @@
 <script setup>
-import { defineProps, computed } from 'vue'
-import { useUserStore } from '../../stores/user'
+import { ref, watch, computed } from 'vue'
+import { defineProps } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { useStrategiesStore } from '@/stores/strategies'
 
+// Props
 const props = defineProps({
   strategy: {
     type: Object,
@@ -9,26 +12,35 @@ const props = defineProps({
   }
 })
 
+// Stores
 const userStore = useUserStore()
+const strategiesStore = useStrategiesStore()
 
-// Format date
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'short', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString(undefined, options)
+// Donnée locale réactive (pour rendre les votes dynamiques)
+const localStrategy = ref({ ...props.strategy })
+
+// Mettre à jour localStrategy si la prop change
+watch(() => props.strategy, (newVal) => {
+  localStrategy.value = { ...newVal }
+})
+
+// Méthode de vote
+function handleVote(type) {
+  strategiesStore.toggleVote(localStrategy.value.id, type).then((updated) => {
+    if (updated) {
+      localStrategy.value.upvotes = updated.upvotes
+      localStrategy.value.downvotes = updated.downvotes
+      localStrategy.value.user_vote = updated.user_vote
+    }
+  })
 }
 
-// Calculate votes score
+// Score calculé
 const voteScore = computed(() => {
-  return props.strategy.upvotes - props.strategy.downvotes
+  return (localStrategy.value.upvotes ?? 0) - (localStrategy.value.downvotes ?? 0)
 })
 
-// Check if current user is the author
-const isAuthor = computed(() => {
-  if (!userStore.isAuthenticated) return false
-  return userStore.user?.id === props.strategy.userId
-})
-
-
+// Map preview
 const mapImages = {
   dust2: '/images/maps/dust2.jpg',
   mirage: '/images/maps/mirage.jpg',
@@ -37,107 +49,86 @@ const mapImages = {
   overpass: '/images/maps/overpass.jpg',
   vertigo: '/images/maps/vertigo.jpg',
   ancient: '/images/maps/ancient.jpg',
+  anubis: '/images/maps/anubis.jpg',
 }
 
-
 const mapImageUrl = computed(() => {
-  return mapImages[props.strategy.map?.toLowerCase()]
+  return mapImages[localStrategy.value.map?.toLowerCase()]
 })
 
+// Format date
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' }
+  return new Date(dateString).toLocaleDateString(undefined, options)
+}
 </script>
 
 <template>
-  <router-link :to="`/strategies/${strategy.id}`" class="card group hover:translate-y-[-4px]">
-    <!-- Card Header with Map Name -->
+  <router-link :to="`/strategies/${localStrategy.id}`" class="card group hover:translate-y-[-4px]">
     <div class="h-48 relative overflow-hidden rounded-t-lg">
-      <img 
-        :src="mapImageUrl" 
-        alt="Map preview" 
-        class="w-full h-full object-cover"
-      />
-      <!-- Map Background -->
+      <img :src="mapImageUrl" alt="Map preview" class="w-full h-full object-cover" />
       <div class="absolute inset-0 opacity-70 bg-gradient-to-t from-csGray-900 to-transparent"></div>
-      
-      <!-- Strategy Type Badge -->
       <div class="absolute top-3 right-3 bg-csGray-900 bg-opacity-80 px-3 py-1 rounded-full text-xs font-medium">
-        {{ strategy.type }}
+        {{ localStrategy.type }}
       </div>
-      
-      <!-- Map Name -->
       <div class="absolute bottom-3 left-3">
         <div class="flex items-center mb-1">
           <span class="text-sm text-gray-400">Map:</span>
-          <span class="ml-2 text-white font-medium capitalize">{{ strategy.map }}</span>
+          <span class="ml-2 text-white font-medium capitalize">{{ localStrategy.map }}</span>
         </div>
-        
-        <!-- Visibility Badge -->
         <span 
           class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-          :class="strategy.is_public ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
+          :class="localStrategy.is_public ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
         >
-          <svg 
-            class="mr-1 h-3 w-3" 
-            :class="strategy.is_public ? 'text-green-300' : 'text-gray-300'"
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path 
-              v-if="strategy.is_public" 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-            <path 
-              v-if="strategy.is_public"
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-            />
-            <path 
-              v-else
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-            />
-          </svg>
-          {{ strategy.is_public ? 'Public' : 'Private' }}
+          {{ localStrategy.is_public ? 'Public' : 'Private' }}
         </span>
       </div>
     </div>
-    
-    <!-- Card Content -->
+
     <div class="p-5">
       <h3 class="text-lg font-heading font-medium mb-2 text-white group-hover:text-tacticalGreen-500 transition-colors duration-200">
-        {{ strategy.title }}
+        {{ localStrategy.title }}
       </h3>
-      
       <p class="text-gray-400 text-sm mb-4 line-clamp-2">
-        {{ strategy.description }}
+        {{ localStrategy.description }}
       </p>
-      
-      <!-- Card Footer -->
+
+      <!-- Footer -->
       <div class="flex items-center justify-between mt-4">
-        <!-- Date -->
-        <span class="text-xs text-gray-500">
-          {{ formatDate(strategy.createdAt) }}
-        </span>
-        
-        <!-- Vote Count -->
-        <div class="flex items-center space-x-1">
-          <svg class="h-4 w-4 text-tacticalGreen-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12 7a1 1 0 01-1 1H9a1 1 0 01-1-1V6a1 1 0 011-1h2a1 1 0 011 1v1zm-3 5a1 1 0 011-1h2a1 1 0 011 1v1a1 1 0 01-1 1H9a1 1 0 01-1-1v-1z" clip-rule="evenodd" />
-            <path fill-rule="evenodd" d="M5 5a3 3 0 013-3h4a3 3 0 013 3v9a3 3 0 01-3 3H8a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v9a1 1 0 001 1h4a1 1 0 001-1V5a1 1 0 00-1-1H8z" clip-rule="evenodd" />
-          </svg>
+        <span class="text-xs text-gray-500">{{ formatDate(localStrategy.createdAt) }}</span>
+        <div class="flex items-center space-x-2">
+          <!-- Upvote Button -->
+          <button
+            @click.stop.prevent="handleVote('upvote')"
+            class="p-1 rounded transition-colors"
+            :class="[
+              localStrategy.user_vote === 1 ? 'text-green-600 bg-green-100' : 'text-green-400 hover:bg-green-900'
+            ]"
+            title="Vote positif"
+          >
+            👍
+          </button>
+
+          <!-- Score -->
           <span 
-            class="text-sm font-medium" 
+            class="text-sm font-medium"
             :class="voteScore > 0 ? 'text-tacticalGreen-500' : voteScore < 0 ? 'text-red-500' : 'text-gray-400'"
           >
             {{ voteScore > 0 ? '+' : '' }}{{ voteScore }}
           </span>
+
+          <!-- Downvote Button -->
+          <button
+            @click.stop.prevent="handleVote('downvote')"
+            class="p-1 rounded transition-colors"
+            :class="[
+              localStrategy.user_vote === -1 ? 'text-red-600 bg-red-100' : 'text-red-400 hover:bg-red-900'
+            ]"
+            title="Vote négatif"
+          >
+            👎
+          </button>
+
         </div>
       </div>
     </div>

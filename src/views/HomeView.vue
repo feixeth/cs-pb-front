@@ -1,42 +1,64 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useStrategiesStore } from '../stores/strategies'
+import { useRoute } from 'vue-router'
+
+import FlashMessage from '../components/layout/FlashMessage.vue'
 import StrategyCard from '../components/strategy/StrategyCard.vue'
+
 const strategiesStore = useStrategiesStore()
 onMounted(async () => {
   await strategiesStore.fetchStrategies()
 })
+
+const route = useRoute()
 </script>
 <template>
   <div>
+    <FlashMessage
+      v-if="route.query.registered === 'true'"
+      message="Account created! Please check your email to confirm your address."
+    />
     <!-- Hero Section -->
     <section class="bg-csGray-900 relative overflow-hidden">
       <div class="absolute inset-0 z-0 opacity-20 bg-gradient-to-r from-tacticalGreen-900 to-primary-900"></div>
+      
       <div class="container mx-auto px-4 py-20 relative z-10">
-        <div class="max-w-3xl mx-auto text-center">
-          <h1 class="text-5xl sm:text-6xl font-heading font-bold mb-6 text-white leading-tight">
-            Level Up Your <span class="text-tacticalGreen-500">Counter-Strike</span> Strategy Game
-          </h1>
-          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    
+    <!-- IMAGE À GAUCHE -->
+    <div class="flex justify-center md:justify-end">
+      <img src="/hero-char.png" alt="Character reading book" class="w-[250px] md:w-[300px] lg:w-[350px]">
+    </div>
 
-            <!-- <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
-            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt="">
-            <img class="mx-auto text-center max-w-3xs" src="/mascott-min-2.png" alt=""> -->
-            
-          </div>
-          <p class="text-xl text-gray-300 mb-8">
-            Create, share, and discover winning strategies with the ultimate CS playbook platform.
-          </p>
-          <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <router-link to="/strategies" class="btn-primary px-8 py-3 text-lg">
-              Browse Strategies
-            </router-link>
-            <router-link to="/register" class="btn-outline px-8 py-3 text-lg">
-              Create Your Playbook
-            </router-link>
-          </div>
-        </div>
+    <!-- TEXTE À DROITE -->
+    <div class="text-center md:text-left max-w-[320px]">
+      <h1 class="text-4xl sm:text-5xl font-heading font-bold mb-6 text-white leading-tight">
+        <span class="block">Level Up Your</span>
+        <span class="block text-tacticalGreen-500">Counter-Strike</span>
+        <span class="block">Strategy Game</span>
+      </h1>
+
+      <p class="text-xl text-gray-300 mb-8">
+        Create, share, and discover winning strategies with the ultimate CS playbook platform.
+      </p>
+    </div>
+
+  </div>
+  <br>
+  <div class="flex flex-col sm:flex-row md:justify-center justify-center gap-5 mt-7">
+        <router-link to="/strategies" class="btn-primary px-8 py-3 text-lg">
+          Browse Strategies
+        </router-link>
+        <router-link to="/register" class="btn-outline px-8 py-3 text-lg">
+          Create Your Playbook
+        </router-link>
       </div>
+</div>
+
+
+
+
     </section>
     
     <!-- Top Strategies Section -->

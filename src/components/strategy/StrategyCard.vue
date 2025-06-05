@@ -49,6 +49,7 @@ const mapImages = {
   overpass: '/images/maps/overpass.jpg',
   vertigo: '/images/maps/vertigo.jpg',
   ancient: '/images/maps/ancient.jpg',
+  anubis: '/images/maps/anubis.jpg',
 }
 
 const mapImageUrl = computed(() => {
